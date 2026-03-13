@@ -342,47 +342,72 @@ textarea{resize:vertical;min-height:90px;line-height:1.6}
     <div class="step-header">
       <div class="step-tag">Section 02</div>
       <h2 class="step-title">Your <em>Legacy Wall</em></h2>
-      <p class="step-desc">Five questions. No right or wrong answers. The more honest you are, the better your profile reads.</p>
+      <p class="step-desc"> No right or wrong answers. The more honest you are, the better your profile reads.</p>
+    </div>
+
+<div class="field">
+      <label class="field-label">Best Level</label>
+      <div class="field-hint">The semester you look back on most fondly.</div>
+      <div class="field-eg"><span class="field-eg-label">e.g.</span><span class="field-eg-text">300 Level First Semester</span></div>
+      <input type="text" id="q3" placeholder="e.g. 300 Level First Semester" maxlength="60"/>
     </div>
 
     <div class="field">
-      <label class="field-label">01 — Your graduation quote.</label>
-      <div class="field-hint">Something you actually mean. Not a Pinterest caption.</div>
-      <div class="field-eg"><span class="field-eg-label">e.g.</span><span class="field-eg-text">"I didn't come this far to only come this far — but honestly, this far is already a miracle."</span></div>
-      <textarea id="q1" placeholder="Say the thing you actually mean..." maxlength="300" oninput="cc(this,'cc1')"></textarea>
-      <div class="char-count"><span id="cc1">0</span>/300</div>
+      <label class="field-label">Most Difficult Level</label>
+      <div class="field-hint">The one that nearly finished you.</div>
+      <div class="field-eg"><span class="field-eg-label">e.g.</span><span class="field-eg-text">300 Level 2nd Semester</span></div>
+      <input type="text" id="q4" placeholder="e.g. 300 Level 2nd Semester" maxlength="60"/>
     </div>
 
     <div class="field">
-      <label class="field-label">02 — The course that almost ended you. And what got you through.</label>
-      <div class="field-hint">Name the course. Then what saved you — a person, a habit, sheer stubbornness.</div>
-      <div class="field-eg"><span class="field-eg-label">e.g.</span><span class="field-eg-text">"EDU 301 Research Methods. What got me through? My friend Tolu who sat with me every Sunday for three weeks straight."</span></div>
-      <textarea id="q2" placeholder="The course, and what (or who) pulled you out..." maxlength="350" oninput="cc(this,'cc2')"></textarea>
-      <div class="char-count"><span id="cc2">0</span>/350</div>
+      <label class="field-label">Favorite Course</label>
+      <div class="field-eg"><span class="field-eg-label">e.g.</span><span class="field-eg-text">EDU 201 — Principles of Education</span></div>
+      <input type="text" id="q5" placeholder="Your favorite course..." maxlength="100"/>
     </div>
 
     <div class="field">
-      <label class="field-label">03 — One person in this class who doesn't know how much they helped you.</label>
-      <div class="field-hint">You don't have to explain the whole story. Just name them and say what they did.</div>
-      <div class="field-eg"><span class="field-eg-label">e.g.</span><span class="field-eg-text">"Biodun. He never let me skip lectures in second year when I was ready to give up. He doesn't know he kept me enrolled."</span></div>
-      <textarea id="q3" placeholder="Their name, and what they did without knowing..." maxlength="300" oninput="cc(this,'cc3')"></textarea>
-      <div class="char-count"><span id="cc3">0</span>/300</div>
+      <label class="field-label">Favorite Lecturer</label>
+      <div class="field-eg"><span class="field-eg-label">e.g.</span><span class="field-eg-text">Dr Osadola</span></div>
+      <input type="text" id="q6" placeholder="The one who made it worth showing up..." maxlength="100"/>
     </div>
 
     <div class="field">
-      <label class="field-label">04 — The advice you'd give the next set — in one sentence.</label>
-      <div class="field-hint">One sentence. Make it count. The fresher who reads this in four years will thank you.</div>
-      <div class="field-eg"><span class="field-eg-label">e.g.</span><span class="field-eg-text">"Start the assignment the day it's given — future you is not as capable as you think they are."</span></div>
-      <textarea id="q4" placeholder="One sentence of hard-earned wisdom..." maxlength="200" oninput="cc(this,'cc4')"></textarea>
-      <div class="char-count"><span id="cc4">0</span>/200</div>
+      <label class="field-label">Hobbies</label>
+      <div class="field-eg"><span class="field-eg-label">e.g.</span><span class="field-eg-text">Singing &amp; hosting Space on X</span></div>
+      <input type="text" id="q7" placeholder="What you do when school is not watching..." maxlength="150"/>
     </div>
 
     <div class="field">
-      <label class="field-label">05 — Where do you actually see yourself in 5 years — be honest.</label>
-      <div class="field-hint">Not the LinkedIn answer. The real one. This is a time capsule — you'll read it again.</div>
-      <div class="field-eg"><span class="field-eg-label">e.g.</span><span class="field-eg-text">"Honestly? Running a school that works the way schools here should work. Maybe two kids. Definitely a dog."</span></div>
-      <textarea id="q5" placeholder="The honest version of your future..." maxlength="300" oninput="cc(this,'cc5')"></textarea>
-      <div class="char-count"><span id="cc5">0</span>/300</div>
+      <label class="field-label">Worst Course</label>
+      <div class="field-eg"><span class="field-eg-label">e.g.</span><span class="field-eg-text">Japan Course</span></div>
+      <input type="text" id="q8" placeholder="The one you would erase from the curriculum..." maxlength="100"/>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Best Academic Experience</label>
+      <div class="field-eg"><span class="field-eg-label">e.g.</span><span class="field-eg-text">Winning the department debate in Year 2</span></div>
+      <input type="text" id="q9" placeholder="Your proudest academic moment..." maxlength="200"/>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Best Experience in Uni</label>
+      <div class="field-hint">Outside the classroom — the memory that made everything worth it.</div>
+      <div class="field-eg"><span class="field-eg-label">e.g.</span><span class="field-eg-text">Partying after final exams with the whole class</span></div>
+      <input type="text" id="q10" placeholder="Your best uni memory..." maxlength="200"/>
+    </div>
+
+    <div class="field">
+      <label class="field-label">If Not This Course, What Other Course?</label>
+      <div class="field-hint">If you hadn't ended up in Educational Management, where would you be?</div>
+      <div class="field-eg"><span class="field-eg-label">e.g.</span><span class="field-eg-text">LAW</span></div>
+      <input type="text" id="q11" placeholder="The course you almost chose..." maxlength="100"/>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Favorite Quote</label>
+      <div class="field-hint">Something you actually live by.</div>
+      <div class="field-eg"><span class="field-eg-label">e.g.</span><span class="field-eg-text">"Follow Your Dream Not Your Boyfriend's"</span></div>
+      <input type="text" id="q12" placeholder="Your quote..." maxlength="200"/>
     </div>
   </div>
 
@@ -640,11 +665,13 @@ function syncPayName() {
 
 function handleGallery(input, catId, countId, thumbsId) {
   var files = Array.prototype.slice.call(input.files);
-  var current = galCounts[catId] || 0;
-  var toAdd = files.slice(0, 3 - current);
-  galCounts[catId] = current + toAdd.length;
+  if (!files.length) return;
+  var toAdd = files.slice(0, 3);
+  // Clear previous thumbs and reset count for this category
   var thumbs = document.getElementById(thumbsId);
   var counter = document.getElementById(countId);
+  thumbs.innerHTML = '';
+  galCounts[catId] = 0;
   toAdd.forEach(function(file) {
     var reader = new FileReader();
     reader.onload = function(e) {
@@ -652,11 +679,10 @@ function handleGallery(input, catId, countId, thumbsId) {
       img.className = 'gallery-thumb';
       img.src = e.target.result;
       thumbs.appendChild(img);
-      var cn = document.getElementById('classPhotoCount');
-      cn.textContent = parseInt(cn.textContent) + 1;
     };
     reader.readAsDataURL(file);
   });
+  galCounts[catId] = toAdd.length;
   counter.textContent = galCounts[catId] + ' of 3 photos added';
 }
 
