@@ -857,6 +857,10 @@ function onPaymentSuccess(ref) {
       return uploadToStorage(f, 'gallery/' + studentId + '_exam_survivors_' + i + '.jpg');
     }))
   ]).then(function(results) {
+    return results;
+  }).catch(function() {
+    return [null, [], [], [], []]; // photos failed — save data anyway
+  }).then(function(results) {
     var row = {
       payment_ref:              ref,
       payment_verified:         true,
