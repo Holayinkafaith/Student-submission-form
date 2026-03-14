@@ -551,14 +551,11 @@ textarea{resize:vertical;min-height:90px;line-height:1.6}
 </div>
 
 <script>
-// ─────────────────────────────────────────
-// PAYSTACK CONFIG
-// Replace the value below with your live public key from your Paystack dashboard
-// Dashboard → Settings → API Keys → Public Key
-// ─────────────────────────────────────────
-var PAYSTACK_PUBLIC_KEY = 'pk_live_bef6f7e6e0d4f8add6ead3437f93cf942c0d0028';
-var AMOUNT_KOBO = 300000; // ₦3,000 = 300,000 kobo (Paystack uses kobo)
-
+ var PAYSTACK_PUBLIC_KEY = 'pk_live_bef6f7e6e0d4f8add6ead3437f93cf942c0d0028';
+var AMOUNT_KOBO = 300000;
+var SUPABASE_URL = 'https://mrojpqtoeyqgfiidxztg.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yb2pwcXRvZXlxZ2ZpaWR4enRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MTczNDMsImV4cCI6MjA4ODk5MzM0M30.kp42OfTl6mo4cSGeEAtlz_UNG_Zziq7ILGYBJGlFs18';
+var BUCKET = 'memoir-student-uploads';
 // ─────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────
@@ -567,25 +564,9 @@ var STEPS = 5;
 var LABELS = ['Your Details','Your Story','Gallery','To the Class','Payment'];
 var galCounts = {g1:0,g2:0,g3:0,g4:0};
 var nwBuilt = false;
-var nwCount = 63;
-var nwQueue = ['Taiwo A.','Chidera O.','Funmilayo K.'];
-var nwQueueIdx = 0;
-var NW_NAMES = [
-  'Adaeze N.','Kofi A.','Fatimah B.','Emeka O.','Simi L.',
-  'Tunde K.','Ngozi E.','Chidi U.','Amaka S.','Bola R.',
-  'Yusuf M.','Ife A.','Dami F.','Seun W.','Kemi T.',
-  'Obinna C.','Halima D.','Tobi R.','Zainab K.','Gbenga L.',
-  'Chisom A.','Ayo P.','Nonso B.','Funmi E.','Uche M.',
-  'Pelumi S.','Rashida O.','Ifeanyi C.','Temi V.','Kunle A.',
-  'Amina H.','Deji F.','Sola K.','Nneka U.','Basit T.',
-  'Lara M.','Ejiro S.','Femi B.','Grace A.','Wale O.',
-  'Chidinma E.','Ahmed K.','Tolani R.','Babatunde F.','Remi A.',
-  'Oluchi S.','Kayode M.','Nkechi B.','Dayo O.','Efua L.',
-  'Segun T.','Blessing C.','Lawal A.','Uju N.','Musa K.',
-  'Tola E.','Gbemi S.','Jide F.','Oyinkan A.','Osas B.',
-  'Chika R.','Folake M.','Biodun O.'
-];
-
+var galFiles = {g1:[], g2:[], g3:[], g4:[]};
+var profileFile = null;
+var PAYMENT_REF = 'MDV-' + Date.now() + '-' + Math.floor(Math.random() * 99999);
 // ─────────────────────────────────────────
 // NAV & ROUTING
 // ─────────────────────────────────────────
@@ -642,6 +623,7 @@ function checkEmails() {
 function handlePhoto(input) {
   var file = input.files[0];
   if (!file) return;
+  profileFile = file; // store for upload later
   var reader = new FileReader();
   reader.onload = function(e) {
     var prev = document.getElementById('photoPreview');
@@ -666,12 +648,12 @@ function syncPayName() {
 function handleGallery(input, catId, countId, thumbsId) {
   var files = Array.prototype.slice.call(input.files);
   if (!files.length) return;
-  var toAdd = files.slice(0, 3);
-  // Clear previous thumbs and reset count for this category
+  var toAdd = files.slice(0, 2);
+  galFiles[catId] = toAdd;
+  galCounts[catId] = toAdd.length;
   var thumbs = document.getElementById(thumbsId);
   var counter = document.getElementById(countId);
   thumbs.innerHTML = '';
-  galCounts[catId] = 0;
   toAdd.forEach(function(file) {
     var reader = new FileReader();
     reader.onload = function(e) {
@@ -682,10 +664,62 @@ function handleGallery(input, catId, countId, thumbsId) {
     };
     reader.readAsDataURL(file);
   });
-  galCounts[catId] = toAdd.length;
-  counter.textContent = galCounts[catId] + ' of 3 photos added';
+  counter.textContent = toAdd.length + ' of 2 photos added';
+}
+// ─────────────────────────────────────────
+// SUPABASE HELPERS
+// ─────────────────────────────────────────
+function sbFetch(path, method, body) {
+  return fetch(SUPABASE_URL + path, {
+    method: method || 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      'Prefer': method === 'POST' ? 'return=representation' : ''
+    },
+    body: body ? JSON.stringify(body) : undefined
+  }).then(function(r) { return r.json(); });
 }
 
+function compressImage(file, maxWidth, quality) {
+  return new Promise(function(resolve) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement('canvas');
+        var ratio = Math.min(1, maxWidth / img.width);
+        canvas.width  = img.width  * ratio;
+        canvas.height = img.height * ratio;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(function(blob) {
+          resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+        }, 'image/jpeg', quality || 0.7);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function uploadToStorage(file, path) {
+  return compressImage(file, 800, 0.7).then(function(compressed) {
+    return fetch(SUPABASE_URL + '/storage/v1/object/' + BUCKET + '/' + path, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'image/jpeg',
+        'x-upsert': 'true'
+      },
+      body: compressed
+    }).then(function(r) {
+      if (!r.ok) throw new Error('Upload failed');
+      return SUPABASE_URL + '/storage/v1/object/public/' + BUCKET + '/' + path;
+    });
+  });
+}
 // ─────────────────────────────────────────
 // NAME WALL
 // ─────────────────────────────────────────
@@ -694,36 +728,43 @@ function buildNameWall() {
   nwBuilt = true;
   var grid = document.getElementById('nwGrid');
   if (!grid) return;
-  NW_NAMES.forEach(function(name, i) {
-    setTimeout(function() {
-      var chip = document.createElement('div');
-      chip.className = 'nw-chip';
-      chip.textContent = name;
-      grid.appendChild(chip);
-      requestAnimationFrame(function() {
-        requestAnimationFrame(function() { chip.classList.add('show'); });
+  sbFetch('/rest/v1/student_submissions?select=full_name&payment_verified=eq.true&order=created_at.asc')
+    .then(function(data) {
+      var names = Array.isArray(data) ? data : [];
+      var countEl = document.getElementById('nwCount');
+      if (countEl) countEl.textContent = names.length;
+      names.forEach(function(row, i) {
+        var parts   = (row.full_name || '').trim().split(' ');
+        var display = parts[0] + (parts.length > 1 ? ' ' + parts[parts.length-1].charAt(0) + '.' : '');
+        setTimeout(function() {
+          var chip = document.createElement('div');
+          chip.className = 'nw-chip';
+          chip.textContent = display;
+          grid.appendChild(chip);
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() { chip.classList.add('show'); });
+          });
+        }, i * 40);
       });
-    }, i * 38);
-  });
-  setTimeout(addLiveName, 3500);
-  setTimeout(addLiveName, 7500);
+    })
+    .catch(function() { /* wall stays empty on error */ });
 }
 
-function addLiveName() {
-  if (nwQueueIdx >= nwQueue.length) return;
+function addNameToWall(fullName) {
   var grid = document.getElementById('nwGrid');
   if (!grid) return;
+  var parts   = fullName.trim().split(' ');
+  var display = parts[0] + (parts.length > 1 ? ' ' + parts[parts.length-1].charAt(0) + '.' : '');
   var chip = document.createElement('div');
   chip.className = 'nw-chip fresh';
-  chip.textContent = nwQueue[nwQueueIdx++];
+  chip.textContent = display;
   var fade = grid.querySelector('.nw-fade');
-  grid.insertBefore(chip, fade ? fade.nextSibling : grid.firstChild);
+  grid.insertBefore(chip, fade ? fade : grid.firstChild);
   requestAnimationFrame(function() {
     requestAnimationFrame(function() { chip.classList.add('show'); });
   });
-  nwCount++;
-  var el = document.getElementById('nwCount');
-  if (el) el.textContent = nwCount;
+  var countEl = document.getElementById('nwCount');
+  if (countEl) countEl.textContent = parseInt(countEl.textContent || '0') + 1;
   setTimeout(function() { chip.classList.remove('fresh'); }, 3000);
 }
 
@@ -768,7 +809,7 @@ function doPay() {
     email: email,
     amount: AMOUNT_KOBO,
     currency: 'NGN',
-    ref: 'MDV-' + Date.now() + '-' + Math.floor(Math.random() * 99999),
+    ref: PAYMENT_REF,
     metadata: {
       custom_fields: [
         { display_name: 'Student Name', variable_name: 'student_name', value: name },
@@ -791,26 +832,80 @@ function doPay() {
 }
 
 function onPaymentSuccess(ref) {
-  // Hide the form, show success screen
+  var payBtn = document.getElementById('btnPay');
+  if (payBtn) { payBtn.textContent = 'Saving your submission...'; }
+  document.getElementById('payLoading').classList.add('show');
+
+  var name      = document.getElementById('fname').value.trim();
+  var email     = document.getElementById('email1').value.trim();
+  var studentId = ref.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+  Promise.all([
+    profileFile
+      ? uploadToStorage(profileFile, 'profile-photos/' + studentId + '.jpg')
+      : Promise.resolve(null),
+    Promise.all((galFiles.g1 || []).map(function(f, i) {
+      return uploadToStorage(f, 'gallery/' + studentId + '_back_to_school_' + i + '.jpg');
+    })),
+    Promise.all((galFiles.g2 || []).map(function(f, i) {
+      return uploadToStorage(f, 'gallery/' + studentId + '_lecture_hall_' + i + '.jpg');
+    })),
+    Promise.all((galFiles.g3 || []).map(function(f, i) {
+      return uploadToStorage(f, 'gallery/' + studentId + '_dinner_night_' + i + '.jpg');
+    })),
+    Promise.all((galFiles.g4 || []).map(function(f, i) {
+      return uploadToStorage(f, 'gallery/' + studentId + '_exam_survivors_' + i + '.jpg');
+    }))
+  ]).then(function(results) {
+    var row = {
+      payment_ref:              ref,
+      payment_verified:         true,
+      payment_amount:           300000,
+      full_name:                name,
+      nickname:                 document.getElementById('nickname').value.trim() || null,
+      initials:                 document.getElementById('initials').value.trim() || null,
+      email:                    email,
+      instagram:                document.getElementById('instagram').value.trim() || null,
+      profile_photo_url:        results[0],
+      best_level:               document.getElementById('q3').value.trim() || null,
+      most_difficult_level:     document.getElementById('q4').value.trim() || null,
+      favorite_course:          document.getElementById('q5').value.trim() || null,
+      favorite_lecturer:        document.getElementById('q6').value.trim() || null,
+      hobbies:                  document.getElementById('q7').value.trim() || null,
+      worst_course:             document.getElementById('q8').value.trim() || null,
+      best_academic_experience: document.getElementById('q9').value.trim() || null,
+      best_uni_experience:      document.getElementById('q10').value.trim() || null,
+      alternative_course:       document.getElementById('q11').value.trim() || null,
+      favorite_quote:           document.getElementById('q12').value.trim() || null,
+      message_to_class:         (document.getElementById('q13') ? document.getElementById('q13').value.trim() : null) || null,
+      gallery_back_to_school:   results[1],
+      gallery_lecture_hall:     results[2],
+      gallery_dinner_night:     results[3],
+      gallery_exam_survivors:   results[4],
+      department:               'Educational Management',
+      university:               'UNILAG',
+      graduation_year:          '2026'
+    };
+    return sbFetch('/rest/v1/student_submissions', 'POST', row);
+  }).then(function() {
+    showSuccess(ref, name);
+  }).catch(function(err) {
+    console.error('Save error after payment:', err, 'ref:', ref);
+    showSuccess(ref, name);
+  });
+}
+
+function showSuccess(ref, name) {
   document.getElementById('s5').classList.remove('active');
   document.getElementById('bottomBar').style.display = 'none';
   document.getElementById('payLoading').classList.remove('show');
-
-  var successScreen = document.getElementById('successScreen');
-  successScreen.classList.add('show');
-
-  // Show payment reference
+  document.getElementById('successScreen').classList.add('show');
   document.getElementById('successRef').textContent = 'Payment ref: ' + ref;
-
-  // Student number — placeholder until backend is connected
-  // TODO: replace with live count from your database
-  document.getElementById('successSpot').textContent = 'You are secured ✦';
-
-  // Progress bar to 100%
+  document.getElementById('successSpot').textContent = 'You are in ✦';
   document.getElementById('pFill').style.width = '100%';
   document.getElementById('navLabel').textContent = 'Submitted ✦';
   document.querySelectorAll('.nav-dot').forEach(function(d) { d.classList.add('done'); });
-
+  addNameToWall(name);
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
